@@ -56,13 +56,13 @@ The workflow is structured into four sequential operational stages:
    git clone [https://github.com/oleksandr-hordashevskyi/n8n-marketing-intelligence-ai-agent.git](https://github.com/oleksandr-hordashevskyi/n8n-marketing-intelligence-ai-agent.git)
    Import Workflow:
 
-1. In your n8n instance, go to Workflows → Import from File.
+2. In your n8n instance, go to Workflows → Import from File.
 
 - Select workflows/marketing_ai_intelligence_pipeline.json.
 
 - Repeat for workflows/global_error_handler.json.
 
-2. Configure Credentials:
+3. Configure Credentials:
 
 - Add your Google Gemini API Key under Credentials.
 
@@ -70,7 +70,7 @@ The workflow is structured into four sequential operational stages:
 
 - Authenticate Google Sheets OAuth2 and specify your tracking spreadsheet.
 
-3. Activate & Monitor:
+4. Activate & Monitor:
 
 - In workflow settings, assign Global_Error_Handler as the designated Error Workflow.
 
@@ -86,8 +86,8 @@ n8n-marketing-intelligence-ai-agent/
 │   ├── marketing_ai_intelligence_pipeline.json   # Main workflow
 │   └── global_error_handler.json                 # Separate subflow for error interception
 ├── images/
-│   ├── main_workflow_architecture.png         # Screenshot of the main flow
-│   └── global_error_handler.png               # Screenshot of the error handler
+│   ├── main_workflow_architecture.png            # Screenshot of the main flow
+│   └── global_error_handler.png                  # Screenshot of the error handler
 └── docs/
     └── setup_guide.md                            # Import and variable configuration guide
 ```
