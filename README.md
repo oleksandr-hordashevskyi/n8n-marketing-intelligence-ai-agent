@@ -1,7 +1,7 @@
 # ⚡ Automated Marketing Intelligence & AI Agent Pipeline (n8n)
 
 [![n8n](https://img.shields.io/badge/n8n-Workflow_Automation-EA4B71?style=flat&logo=n8n&logoColor=white)](workflows/marketing_ai_intelligence_pipeline.json)
-[![AI Agent](https://img.shields.io/badge/Google_Gemini-AI_Agent-4285F4?style=flat&logo=google&logoColor=white)](#-ai-agent--prompt-engineering)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI_Agent-4285F4?style=flat&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Alerts](https://img.shields.io/badge/Telegram-Real--Time_Alerts-26A5E4?style=flat&logo=telegram&logoColor=white)](workflows/global_error_handler.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
