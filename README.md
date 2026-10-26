@@ -18,10 +18,10 @@ The architecture incorporates scheduled and on-demand execution triggers, robust
 ## 📊 Workflow Architecture
 
 ### 1. Main Intelligence Pipeline
-![Main Workflow Architecture](images/01_main_workflow_architecture.png)
+![Main Workflow Architecture](images/main_workflow_architecture.png)
 
 ### 2. Global Error Handling & Monitoring
-![Global Error Handler](images/02_global_error_handler.png)
+![Global Error Handler](images/global_error_handler.png)
 
 ---
 
