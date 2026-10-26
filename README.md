@@ -53,28 +53,29 @@ The workflow is structured into four sequential operational stages:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/oleksandr-hordashevskyi/n8n-marketing-intelligence-ai-agent.git](https://github.com/oleksandr-hordashevskyi/n8n-marketing-intelligence-ai-agent.git)
-   Import Workflow:
+   git clone https://github.com/oleksandr-hordashevskyi/n8n-marketing-intelligence-ai-agent.git
 
-2. In your n8n instance, go to Workflows → Import from File.
+2. Import Workflows into n8n:
+
+- In your n8n workspace, navigate to Workflows → Import from File.
 
 - Select workflows/marketing_ai_intelligence_pipeline.json.
 
-- Repeat for workflows/global_error_handler.json.
+- Repeat the step for workflows/global_error_handler.json.
 
 3. Configure Credentials:
 
 - Add your Google Gemini API Key under Credentials.
 
-- Connect your Telegram Bot Token and designate your alert channel Chat ID.
+- Connect your Telegram Bot Token and designate the target alert channel Chat ID.
 
-- Authenticate Google Sheets OAuth2 and specify your tracking spreadsheet.
+- Authenticate Google Sheets OAuth2 and specify your tracking spreadsheet ID.
 
 4. Activate & Monitor:
 
-- In workflow settings, assign Global_Error_Handler as the designated Error Workflow.
+- In the main workflow settings, set Global_Error_Handler as the designated Error Workflow.
 
-- Toggle the workflow to Active.
+- Switch the workflow toggle to Active.
 
 ## 📁 Project Structure & Deliverables
 
