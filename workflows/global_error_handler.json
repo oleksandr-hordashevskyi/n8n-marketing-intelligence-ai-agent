@@ -1,0 +1,68 @@
+{
+  "name": "global_error_handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "95b68ab3-049c-40f7-b5aa-963842a4450c",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "-1004305233107",
+        "text": "=🚨 <b>CRITICAL WORKFLOW FAILURE</b>\n\n⚙️ <b>Workflow:</b> {{ $json.workflow.name }}\n❌ <b>Failed Node:</b> {{ $json.execution.error.node.name }}\n💬 <b>Error Message:</b> <code>{{ $json.execution.error.message }}</code>\n⏱ <b>Time:</b> {{ new Date().toLocaleString('uk-UA', { timeZone: 'Europe/Podgorica' }) }} (ME)\n\n🔗 <a href=\"{{ $json.execution.url }}\">Open Execution in n8n</a>",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "606aa4bf-1735-48b3-9677-d5caabd120be",
+      "name": "Send a text message",
+      "webhookId": "1d406c90-3bae-47e9-aa15-7cf46f068bc2",
+      "credentials": {
+        "telegramApi": {
+          "id": "rGZw1USOJovGPt3A",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7312f894-665a-45bb-a9b5-12df9bfcea37",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb378efe67e0c84f8984dfe93622eb763fc8e52c1cb69f7a133f6cec2ac4f60a"
+  },
+  "nodeGroups": [],
+  "id": "lWo8Fbzli2bVkhg9",
+  "tags": []
+}

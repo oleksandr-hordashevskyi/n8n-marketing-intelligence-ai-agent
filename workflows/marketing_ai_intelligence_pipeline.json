@@ -1,0 +1,346 @@
+{
+  "name": "Marketing_ai_intelligence_pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        128
+      ],
+      "id": "969a2e3a-ebc5-4301-a432-8a058f6e9c8d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "6f0d1fd2-8c46-4d10-94d6-9817ea165736",
+      "name": "HTTP Request",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ти — Senior Market Analyst. Проаналізуй поточний стан активу на основі верифікованих даних.\n\nВхідні метрики (24h):\n- Актив: {{ $json.symbol }}\n- Поточна ціна: ${{ $json.price }}\n- Добова динаміка: {{ $json.changePercent24h }}%\n- Діапазон: Min ${{ $json.low24h }} / Max ${{ $json.high24h }}\n- Обсяг торгів: {{ $json.volumeBTC }} BTC\n- Загальний тренд: {{ $json.isPositiveTrend ? 'Вихідний (Позитивний)' : 'Низхідний (Негативний)' }}\n\nВимоги до відповіді:\n1. Надай короткий аналітичний висновок українською мовою.\n2. Формат: рівно 3 лаконічні пункти (булети).\n3. Перший пункт — поточний моментум і волатильність (оцінка діапазону min/max).\n4. Другий пункт — обсяги торгів та їхнє підтвердження цінового руху.\n5. Третій пункт — короткий висновок для трейдера/маркетолога на найближчі години.\n6. Без зайвих вступів та підсумкових прощань.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "83ad0d15-b5a4-4756-93c8-8f8aa1ebcada",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        208
+      ],
+      "id": "13a16c6c-3b89-4e3e-b28e-45a83c10add6",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rUWZQqqjtuNN7Ws6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "904512068",
+        "text": "=📊 <b>BTC/USDT Daily Market Pulse</b>\n⏱ <i>{{ $('Normalize & Validate BTC Data').item.json.displayDate }}</i>\n\n💰 <b>Ціна:</b> {{ $('Normalize & Validate BTC Data').item.json.displayPrice }}\n📈 <b>Зміна 24h:</b> {{ $('Normalize & Validate BTC Data').item.json.displayChange }}\n📊 <b>Діапазон:</b> {{ $('Normalize & Validate BTC Data').item.json.displayLow }} – {{ $('Normalize & Validate BTC Data').item.json.displayHigh }}\n📦 <b>Обсяг:</b> {{ $('Normalize & Validate BTC Data').item.json.displayVolume }}\n\n🧠 <b>Аналітика моментуму:</b>\n\n{{ $json.output\n  .replace(/\\*\\*(.*?)\\*\\*/g, '<b>$1</b>')\n  .replace(/^[\\*\\-•]\\s*/gm, '• ')\n  .replace(/\\n(• )/g, '\\n\\n$1')\n  .trim()\n}}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        128
+      ],
+      "id": "61c7ef05-54ca-4e5b-a66e-e8dcf27211cd",
+      "name": "Send a text message",
+      "webhookId": "1ae72082-e867-49df-aa2b-0ee99d1f5065",
+      "credentials": {
+        "telegramApi": {
+          "id": "rGZw1USOJovGPt3A",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "9114a76b-3a92-479b-af9d-b3cdd894e974",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\n\n// 1. Валідація обов'язкових полів від біржі\nif (!raw || !raw.lastPrice || !raw.symbol) {\n  throw new Error(\"Validation Error: Binance response is missing required fields (lastPrice, symbol).\");\n}\n\n// 2. Детерміновані числові розрахунки\nconst currentPrice = Number(parseFloat(raw.lastPrice).toFixed(2));\nconst changePercent = Number(parseFloat(raw.priceChangePercent).toFixed(2));\nconst high24h = Number(parseFloat(raw.highPrice).toFixed(2));\nconst low24h = Number(parseFloat(raw.lowPrice).toFixed(2));\nconst volumeBtc = Number(parseFloat(raw.volume).toFixed(2));\n\n// 3. Форматування валюти ($82,105.53)\nconst formatCurrency = (val) => {\n  return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });\n};\n\n// 4. Поточний час виконання та динамічне визначення часового поясу Чорногорії\nconst now = new Date();\n\n// Форматування дати і часу за Чорногорією\nconst montenegroDate = now.toLocaleString('uk-UA', {\n  timeZone: 'Europe/Podgorica',\n  day: '2-digit',\n  month: '2-digit',\n  year: 'numeric',\n  hour: '2-digit',\n  minute: '2-digit',\n  hour12: false\n});\n\n// Динамічне визначення зміщення (UTC+2 влітку, UTC+1 взимку)\nconst offsetPart = new Intl.DateTimeFormat('en-US', {\n  timeZone: 'Europe/Podgorica',\n  timeZoneName: 'shortOffset'\n}).formatToParts(now).find(p => p.type === 'timeZoneName');\n\nconst utcOffset = offsetPart ? offsetPart.value.replace('GMT', 'UTC') : 'UTC+2';\nconst formattedDisplayDate = `${montenegroDate} (ME, ${utcOffset})`;\n\n// 5. Повернення структурованого результату\nreturn [{\n  json: {\n    // Сирі дані (для логіки, Google Sheets тощо)\n    symbol: raw.symbol,\n    price: currentPrice,\n    changePercent24h: changePercent,\n    high24h: high24h,\n    low24h: low24h,\n    volumeBTC: volumeBtc,\n    timestampRaw: now.toISOString(),\n    isPositiveTrend: changePercent >= 0,\n\n    // Відформатовані рядки для інтерфейсу\n    displayPrice: formatCurrency(currentPrice),\n    displayHigh: formatCurrency(high24h),\n    displayLow: formatCurrency(low24h),\n    displayVolume: volumeBtc.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' BTC',\n    displayChange: (changePercent >= 0 ? '+' : '') + changePercent + '%',\n    displayDate: formattedDisplayDate\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "bf88f535-93aa-436c-8713-de2915c5ab77",
+      "name": "Normalize & Validate BTC Data"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1bxOqwh-uHoTObCPXO2-CqXpPrnoBaPIkzpx4C5Lhct8/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Daily_Logs",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp_iso": "={{ $('Normalize & Validate BTC Data').item.json.timestampRaw }}",
+            "local_time": "={{ $('Normalize & Validate BTC Data').item.json.displayDate }}",
+            "symbol": "={{ $('Normalize & Validate BTC Data').item.json.symbol }}",
+            "price": "={{ $('Normalize & Validate BTC Data').item.json.price }}",
+            "change_24h_pct": "={{ $('Normalize & Validate BTC Data').item.json.changePercent24h }}",
+            "high_24h": "={{ $('Normalize & Validate BTC Data').item.json.high24h }}",
+            "low_24h": "={{ $('Normalize & Validate BTC Data').item.json.low24h }}",
+            "volume_btc": "={{ $('Normalize & Validate BTC Data').item.json.volumeBTC }}",
+            "ai_summary": "={{ $('AI Agent').item.json.output.replace(/[*_#]/g, '') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp_iso",
+              "displayName": "timestamp_iso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "local_time",
+              "displayName": "local_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "symbol",
+              "displayName": "symbol",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "change_24h_pct",
+              "displayName": "change_24h_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "high_24h",
+              "displayName": "high_24h",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "low_24h",
+              "displayName": "low_24h",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "volume_btc",
+              "displayName": "volume_btc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_summary",
+              "displayName": "ai_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        -80
+      ],
+      "id": "3909b024-68d1-4c6e-8ea6-60988bca8974",
+      "name": "Append BTC Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "chVKKvvpjDmb58Ac",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Validate BTC Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append BTC Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize & Validate BTC Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "lWo8Fbzli2bVkhg9",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "26e0a13f-06c1-421f-a708-25898678a99e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fb378efe67e0c84f8984dfe93622eb763fc8e52c1cb69f7a133f6cec2ac4f60a"
+  },
+  "nodeGroups": [],
+  "id": "366dPFMlMdB5n2Xn",
+  "tags": []
+}
